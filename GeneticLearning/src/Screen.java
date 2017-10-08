@@ -1,12 +1,17 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,7 +33,7 @@ public class Screen extends JFrame {
 	
 	public Screen() {
 		setTitle(title);
-		setSize(700, 800);
+		setSize(740, 820);
 		Dimension monitorSize = Toolkit.getDefaultToolkit().getScreenSize();
 		int mid_X = (int) (monitorSize.getWidth()/2 - getWidth()/2);
 		int mid_Y = (int) (monitorSize.getHeight()/2 - getHeight()/2);
@@ -45,7 +50,7 @@ public class Screen extends JFrame {
 	
 	public void setLearningPanel() {
 		JPanel learningPanel = new JPanel();
-		learningPanel.setBounds(15, 10, 660, 300);
+		learningPanel.setBounds(15, 10, 700, 300);
 		learningPanel.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "학습"));
 		learningPanel.setLayout(null);
 		
@@ -177,7 +182,7 @@ public class Screen extends JFrame {
 	}
 	private void setGraphPanel(JPanel learningPanel) {
 		JPanel graphPanel = new JPanel();
-		graphPanel.setBounds(390, 30, 250, 240);
+		graphPanel.setBounds(390, 30, 290, 240);
 		graphPanel.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "그래프"));
 		
 		learningPanel.add(graphPanel);
@@ -185,10 +190,92 @@ public class Screen extends JFrame {
 	
 	public void setSettingPanel() {
 		JPanel settingPanel = new JPanel();
-		settingPanel.setBounds(15, 320, 660, 430);
+		settingPanel.setBounds(15, 320, 700, 450);
 		settingPanel.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "스테이지 설정"));
 		settingPanel.setLayout(null);
 		
+		setPreviewPanel(settingPanel);
+		setStagePanel(settingPanel);
+		setSettingButton(settingPanel);
+		
 		add(settingPanel);
+	}
+	private void setPreviewPanel(JPanel settingPanel) {
+		JPanel previewPanel = new JPanel();
+		previewPanel.setBounds(15, 30, 500, 400);
+		previewPanel.setBorder(new LineBorder(new Color(200, 200, 200)));
+		previewPanel.setLayout(null);
+		previewPanel.setBackground(new Color(30, 30, 30));
+		
+		JButton playButton = new JButton();
+		playButton.setBounds(220, 170, 60, 60);
+		playButton.setContentAreaFilled(false);
+		playButton.setBorder(null);
+		playButton.setIcon(new ImageIcon("playButton.png"));
+		playButton.addMouseListener(new MouseAdapter() {
+			public void mouseEntered(MouseEvent e) {
+				playButton.setIcon(new ImageIcon("playButton_over.png"));
+			}
+			public void mouseExited(MouseEvent e) {
+				playButton.setIcon(new ImageIcon("playButton.png"));
+			}
+			public void mouseClicked(MouseEvent e) {
+				
+			}
+		});
+		
+		previewPanel.add(playButton);
+		
+		settingPanel.add(previewPanel);
+	}
+	private void setStagePanel(JPanel settingPanel) {
+		JPanel stagePanel = new JPanel();
+		stagePanel.setBounds(530, 30, 150, 310);
+		stagePanel.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "스테이지"));
+		stagePanel.setLayout(new GridLayout(10, 1));
+		
+		settingPanel.add(stagePanel);
+	}
+	private void setSettingButton(JPanel settingPanel) {
+		JPanel panel_changeButton = new JPanel();
+		panel_changeButton.setBounds(530, 335, 150, 40);
+		JButton changeButton = new JButton("              변경               ");
+		changeButton.setFocusPainted(false);
+		changeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent action) {
+				if(action.getSource().equals(changeButton)) {
+					JPanel changePanel = new JPanel();
+					changePanel.setLayout(new GridLayout(100, 1));
+					
+					JScrollPane scrollPane = new JScrollPane(changePanel,
+							JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+					
+					JDialog dialog = new JDialog();
+					dialog.setTitle("선택하세요");
+					dialog.setSize(170, 400);
+					dialog.setLocation(getLocation().x + 700, getLocation().y + 360);
+					
+					dialog.add(scrollPane);					
+					dialog.setVisible(true);
+				}
+			}
+		});
+		panel_changeButton.add(changeButton);
+		
+		JPanel panel_saveButton = new JPanel();
+		panel_saveButton.setBounds(530, 395, 150, 40);
+		JButton saveButton = new JButton("              저장               ");
+		saveButton.setFocusPainted(false);
+		saveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent action) {
+				if(action.getSource().equals(saveButton)) {
+					
+				}
+			}
+		});
+		panel_saveButton.add(saveButton);
+		
+		settingPanel.add(panel_changeButton);
+		settingPanel.add(panel_saveButton);
 	}
 }

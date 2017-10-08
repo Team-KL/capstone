@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -24,6 +25,8 @@ public class Screen extends JFrame {
 	static final String title = "";
 	
 	JPanel listPanel;
+	JPanel graphPanel;
+	JPanel stagePanel;
 	
 	JTextField textField_EVOLUTION_NUM;
 	JTextField textField_ENTITY_NUM;
@@ -68,7 +71,7 @@ public class Screen extends JFrame {
 		JScrollPane scrollPane = new JScrollPane(listPanel,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setBounds(15, 30, 145, 240);
-		scrollPane.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "결과창"));
+		scrollPane.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "학습 결과"));
 		
 		learningPanel.add(scrollPane);
 	}
@@ -159,6 +162,12 @@ public class Screen extends JFrame {
 					textField_MUTATION_RATIO.setText("");
 					textField_MUTATION_EFFECT.setText("");
 					
+					graphPanel.repaint();
+					
+					stagePanel.removeAll();
+					stagePanel.revalidate();
+					stagePanel.repaint();
+					
 					startButton.setText("          학습 시작          ");
 					startButton.setEnabled(true);
 				}
@@ -181,7 +190,22 @@ public class Screen extends JFrame {
 		learningPanel.add(panel_startButton);
 	}
 	private void setGraphPanel(JPanel learningPanel) {
-		JPanel graphPanel = new JPanel();
+		graphPanel = new JPanel() {
+			public void paint(Graphics g) {
+				super.paint(g);
+				g.setColor(Color.black);
+				g.drawLine(15, graphPanel.getHeight()-20, graphPanel.getWidth()-20, graphPanel.getHeight()-20);
+				g.drawLine(graphPanel.getWidth()-25, graphPanel.getHeight()-25,
+						graphPanel.getWidth()-20, graphPanel.getHeight()-20);
+				g.drawLine(graphPanel.getWidth()-25, graphPanel.getHeight()-15,
+						graphPanel.getWidth()-20, graphPanel.getHeight()-20);
+				g.drawLine(20, 25, 20, graphPanel.getHeight()-15);
+				g.drawLine(20, 25, 15, 30);
+				g.drawLine(20, 25, 25, 30);
+				g.drawString("Score", 30, 35);
+				g.drawString("세대", graphPanel.getWidth()-45, graphPanel.getHeight()-30);
+			}
+		};
 		graphPanel.setBounds(390, 30, 290, 240);
 		graphPanel.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "그래프"));
 		
@@ -229,7 +253,7 @@ public class Screen extends JFrame {
 		settingPanel.add(previewPanel);
 	}
 	private void setStagePanel(JPanel settingPanel) {
-		JPanel stagePanel = new JPanel();
+		stagePanel = new JPanel();
 		stagePanel.setBounds(530, 30, 150, 310);
 		stagePanel.setBorder(new TitledBorder(new LineBorder(new Color(200, 200, 200)), "스테이지"));
 		stagePanel.setLayout(new GridLayout(10, 1));

@@ -31,7 +31,7 @@ class Panel_Player extends JPanel {
 		
 		gTemp.setColor(Color.red);
 		gTemp.setFont(new Font("±¼¸²", Font.BOLD, 15));
-		gTemp.drawString("" + Screen_Game.stageNum, getWidth()-240, 50);
+		gTemp.drawString("" + Main.stageNum, getWidth()-240, 50);
 		
 		gTemp.setColor(Color.yellow);
 		gTemp.setFont(new Font("±¼¸²", Font.BOLD, 15));

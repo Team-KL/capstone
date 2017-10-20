@@ -19,8 +19,9 @@ class Bullet_Major extends Bullet {
 				|| y < half_height || y > panel.getHeight() - half_height) {
 
 			if(!generated) {
-				speed = (int)(Math.random() * 3) + 2;
-				setModifyingValue(Screen_Game.player.x, Screen_Game.player.y);
+				Data data = Screen_Game.majorDataList.removeFirst();
+				setModifyingValue(data.aim.x, data.aim.y);
+				speed = data.speed;
 				makeMinors();
 				useData = true;
 			}
@@ -31,11 +32,9 @@ class Bullet_Major extends Bullet {
 
 	public void makeMinors() {
 		for(int i = 0; i < 3; i++) {
-			double randomX = Math.random() * panel.getWidth();
-			double randomY = Math.random() * panel.getHeight();
-			int speed = (int)(Math.random() * 3) + 2;
+			Data data = Screen_Game.minorDataList.removeFirst();
 
-			Bullet_Minor b = new Bullet_Minor(x, y, (int)randomX, (int)randomY, speed, i, panel);
+			Bullet_Minor b = new Bullet_Minor(x, y, data.aim.x, data.aim.y, data.speed, i, panel);
 
 			Screen_Game.minorBullets.add(b);
 			generated = true;

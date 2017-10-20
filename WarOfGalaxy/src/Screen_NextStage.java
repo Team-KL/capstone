@@ -47,14 +47,14 @@ class Screen_NextStage extends Screen {
 					repaint();
 				}
 				else if(keyCode == KeyEvent.VK_ENTER){
-//					if(pointerPos == startPos) {
-//						Thread t = new Thread(new Runnable() {
-//							public void run() {
-//								Main.makeGameScreen();
-//							}
-//						});
-//						t.start();
-//					}
+					if(pointerPos == startPos) {
+						Thread t = new Thread(new Runnable() {
+							public void run() {
+								Main.makeGameScreen();
+							}
+						});
+						t.start();
+					}
 					dispose();				
 				}
 			}

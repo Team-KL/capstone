@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 class Airplane_AI extends Airplane{
 	JPanel panel;
 	
-	int[] gene = {6, 6, 4, 4, 2, 2, 4, 3, 8, 6, 8, 7, 2, 7, 2, 6};
+	int[] gene;
 	final int GENE_ELEMENT_NUM = 16;
 	final int RADAR_NUM = 4;
 	
@@ -16,9 +16,10 @@ class Airplane_AI extends Airplane{
 	
 	boolean[] nearState = new boolean[RADAR_NUM];
 	
-	public Airplane_AI(JPanel panel) {
+	public Airplane_AI(JPanel panel, int[] gene) {
 		super((int)(panel.getWidth() * 1.0/2), (int)(panel.getHeight() * 2.0/3), 4, panel);
 		this.panel = panel;
+		this.gene = gene;
 	}
 	
 	public void move() {

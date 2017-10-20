@@ -1,13 +1,21 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Comparator;
+import java.util.LinkedList;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -24,15 +32,23 @@ import javax.swing.border.TitledBorder;
 public class Screen extends JFrame {
 	static final String title = "";
 	
-	JPanel listPanel;
-	JPanel graphPanel;
+	static JPanel listPanel;
+	static JPanel graphPanel;
 	JPanel stagePanel;
+	
+	static LinkedList<Point> dots = new LinkedList<>();
 	
 	JTextField textField_EVOLUTION_NUM;
 	JTextField textField_ENTITY_NUM;
 	JTextField textField_CROSSOVER_RATIO;
 	JTextField textField_MUTATION_RATIO;
 	JTextField textField_MUTATION_EFFECT;
+	
+	JButton selectedButton;
+	
+	static LinkedList<Gene> candidate = new LinkedList<>();
+	
+	Thread t;
 	
 	public Screen() {
 		setTitle(title);
@@ -83,6 +99,7 @@ public class Screen extends JFrame {
 		panel_EVOLUTION_NUM.add(label_EVOLUTION_NUM_1);
 		textField_EVOLUTION_NUM = new JTextField();
 		textField_EVOLUTION_NUM.setPreferredSize(new Dimension(40, 18));
+		textField_EVOLUTION_NUM.setText("100");
 		panel_EVOLUTION_NUM.add(textField_EVOLUTION_NUM);
 		JLabel label_EVOLUTION_NUM_2 = new JLabel("세대");
 		panel_EVOLUTION_NUM.add(label_EVOLUTION_NUM_2);
@@ -94,6 +111,7 @@ public class Screen extends JFrame {
 		panel_ENTITY_NUM.add(label_ENTITY_NUM_1);
 		textField_ENTITY_NUM = new JTextField();
 		textField_ENTITY_NUM.setPreferredSize(new Dimension(40, 18));
+		textField_ENTITY_NUM.setText("100");
 		panel_ENTITY_NUM.add(textField_ENTITY_NUM);
 		JLabel label_ENTITY_NUM_2 = new JLabel("개");
 		panel_ENTITY_NUM.add(label_ENTITY_NUM_2);
@@ -105,6 +123,7 @@ public class Screen extends JFrame {
 		panel_CROSSOVER_RATIO.add(label_CROSSOVER_RATIO_1);
 		textField_CROSSOVER_RATIO = new JTextField();
 		textField_CROSSOVER_RATIO.setPreferredSize(new Dimension(40, 18));
+		textField_CROSSOVER_RATIO.setText("100");
 		panel_CROSSOVER_RATIO.add(textField_CROSSOVER_RATIO);		
 		JLabel label_CROSSOVER_RATIO_2 = new JLabel("%");
 		panel_CROSSOVER_RATIO.add(label_CROSSOVER_RATIO_2);
@@ -116,6 +135,7 @@ public class Screen extends JFrame {
 		panel_MUTATION_RATIO.add(label_MUTATION_RATIO_1);
 		textField_MUTATION_RATIO = new JTextField();
 		textField_MUTATION_RATIO.setPreferredSize(new Dimension(40, 18));
+		textField_MUTATION_RATIO.setText("3");
 		panel_MUTATION_RATIO.add(textField_MUTATION_RATIO);		
 		JLabel label_MUTATION_RATIO_2 = new JLabel("%");
 		panel_MUTATION_RATIO.add(label_MUTATION_RATIO_2);
@@ -127,6 +147,7 @@ public class Screen extends JFrame {
 		panel_MUTATION_EFFECT.add(label_MUTATION_EFFECT_1);
 		textField_MUTATION_EFFECT = new JTextField();
 		textField_MUTATION_EFFECT.setPreferredSize(new Dimension(40, 18));
+		textField_MUTATION_EFFECT.setText("3");
 		panel_MUTATION_EFFECT.add(textField_MUTATION_EFFECT);		
 		JLabel label_MUTATION_EFFECT_2 = new JLabel("(1~16)");
 		panel_MUTATION_EFFECT.add(label_MUTATION_EFFECT_2);
@@ -152,16 +173,21 @@ public class Screen extends JFrame {
 		resetButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent action) {
 				if(action.getSource().equals(resetButton)) {
+					t.stop();
+					
+					selectedButton = null;
+					
 					listPanel.removeAll();
 					listPanel.revalidate();
 					listPanel.repaint();
 					
-					textField_EVOLUTION_NUM.setText("");
-					textField_ENTITY_NUM.setText("");
-					textField_CROSSOVER_RATIO.setText("");
-					textField_MUTATION_RATIO.setText("");
-					textField_MUTATION_EFFECT.setText("");
+					textField_EVOLUTION_NUM.setText("100");
+					textField_ENTITY_NUM.setText("100");
+					textField_CROSSOVER_RATIO.setText("100");
+					textField_MUTATION_RATIO.setText("3");
+					textField_MUTATION_EFFECT.setText("3");
 					
+					dots.clear();
 					graphPanel.repaint();
 					
 					stagePanel.removeAll();
@@ -177,8 +203,63 @@ public class Screen extends JFrame {
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent action) {
 				if(action.getSource().equals(startButton)) {
-					startButton.setText("               완료               ");
-					startButton.setEnabled(false);
+					
+					dots.clear();
+					graphPanel.repaint();
+					
+					int EVOLUTION_NUM = Integer.parseInt(textField_EVOLUTION_NUM.getText());
+					int ENTITY_NUM = Integer.parseInt(textField_ENTITY_NUM.getText());
+					double CROSSOVER_RATIO = Integer.parseInt(textField_CROSSOVER_RATIO.getText()) / 100.0;
+					double MUTATION_RATIO = Integer.parseInt(textField_MUTATION_RATIO.getText()) / 100.0;
+					int MUTATION_EFFECT = Integer.parseInt(textField_MUTATION_EFFECT.getText());
+					
+					candidate = new LinkedList<>();
+					
+					try {
+						t = new Thread(new Runnable() {
+							public void run() {
+								startButton.setEnabled(false);
+								startButton.setText("             학습 중            ");
+								
+								new Learning(EVOLUTION_NUM, ENTITY_NUM, CROSSOVER_RATIO, MUTATION_RATIO, MUTATION_EFFECT);
+								
+								LinkedList<Gene> copy_candidate = (LinkedList<Gene>) candidate.clone();
+								copy_candidate.sort(new Comparator<Gene>() {
+									public int compare(Gene g1, Gene g2) {
+										return g1.score - g2.score;
+									}
+								});
+								
+								for(int i = 0; i <= 9; i++) {
+									JButton button = new JButton();
+									button.setFocusPainted(false);
+									button.setText(copy_candidate.get(i*EVOLUTION_NUM/10).index + "세대 Score: " + copy_candidate.get(i*EVOLUTION_NUM/10).score);
+									button.setBackground(new Color(220, 220, 220));
+									button.addMouseListener(new MouseAdapter() {
+										public void mouseClicked(MouseEvent e) {
+											if(selectedButton != null) {
+												selectedButton.setForeground(Color.black);
+												selectedButton.setBackground(new Color(220, 220, 220));
+											}
+											button.setForeground(Color.white);
+											button.setBackground(new Color(100, 200, 100));
+											selectedButton = button;
+										}
+									});
+									stagePanel.add(button);
+								}
+								stagePanel.revalidate();
+								stagePanel.repaint();
+								
+								startButton.setText("               완료               ");
+							}
+						});
+						t.start();
+					}
+					catch (Exception e) {
+						
+					}
+					
 				}
 			}
 		});
@@ -204,6 +285,22 @@ public class Screen extends JFrame {
 				g.drawLine(20, 25, 25, 30);
 				g.drawString("Score", 30, 35);
 				g.drawString("세대", graphPanel.getWidth()-45, graphPanel.getHeight()-30);
+				
+				g.setColor(new Color(109, 207, 246));
+				((Graphics2D)g).setStroke(new BasicStroke(2));
+				float a = (graphPanel.getWidth()-40) / (float)Integer.parseInt(textField_EVOLUTION_NUM.getText());
+				float b = (graphPanel.getHeight()-40) / 80.f;
+				if(!dots.isEmpty()) {
+					Point prev = dots.peekFirst();
+					for(Point curr : dots) {
+						int x1 = 20 + (int)(a*prev.x);
+						int y1 = graphPanel.getHeight()-20 - (int)(b*prev.y);
+						int x2 = 20 + (int)(a*curr.x);
+						int y2 = graphPanel.getHeight()-20 - (int)(b*curr.y);
+						g.drawLine(x1, y1, x2, y2);
+						prev = curr;
+					}
+				}
 			}
 		};
 		graphPanel.setBounds(390, 30, 290, 240);
@@ -244,7 +341,33 @@ public class Screen extends JFrame {
 				playButton.setIcon(new ImageIcon("playButton.png"));
 			}
 			public void mouseClicked(MouseEvent e) {
-				
+				if(selectedButton != null) {
+					String text = selectedButton.getText().replace("세대", ",");
+			    	int index = Integer.parseInt(text.split(",")[0]);
+			    	
+			    	Gene gene = candidate.get(index);
+			    	
+			    	Thread t = new Thread(new Runnable() {
+			    		public void run() {
+			    			Simulation_forPlay panel_AI = new Simulation_forPlay();
+							panel_AI.setBounds(15, 30, 500, 400);
+							settingPanel.add(panel_AI);
+							settingPanel.revalidate();
+							settingPanel.repaint();
+							
+							panel_AI.reset(gene);
+							panel_AI.run();
+							
+							settingPanel.remove(panel_AI);
+							settingPanel.revalidate();
+							settingPanel.repaint();
+			    		}
+			    	});
+			    	t.start();
+					
+					
+					
+				}
 			}
 		});
 		
@@ -269,7 +392,7 @@ public class Screen extends JFrame {
 			public void actionPerformed(ActionEvent action) {
 				if(action.getSource().equals(changeButton)) {
 					JPanel changePanel = new JPanel();
-					changePanel.setLayout(new GridLayout(100, 1));
+					changePanel.setLayout(new GridLayout(candidate.size(), 1));
 					
 					JScrollPane scrollPane = new JScrollPane(changePanel,
 							JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -278,6 +401,30 @@ public class Screen extends JFrame {
 					dialog.setTitle("선택하세요");
 					dialog.setSize(170, 400);
 					dialog.setLocation(getLocation().x + 700, getLocation().y + 360);
+					
+					for(int i = 0; i < candidate.size(); i++) {
+						JButton b = new JButton(i + "세대 Score: " + candidate.get(i).score);
+						b.setFocusPainted(false);
+						b.setContentAreaFilled(false);
+						b.addMouseListener(new MouseAdapter() {
+							public void mouseEntered(MouseEvent e) {
+								b.setForeground(Color.white);
+								b.setContentAreaFilled(true);
+								b.setBackground(new Color(100, 200, 100));
+							}
+							public void mouseExited(MouseEvent e) {
+								b.setForeground(Color.black);
+								b.setContentAreaFilled(false);
+							}
+							public void mouseClicked(MouseEvent e) {
+								selectedButton.setText(b.getText());
+								stagePanel.revalidate();
+								stagePanel.repaint();
+								dialog.dispose();
+							}
+						});
+						changePanel.add(b);
+					}
 					
 					dialog.add(scrollPane);					
 					dialog.setVisible(true);
@@ -293,7 +440,25 @@ public class Screen extends JFrame {
 		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent action) {
 				if(action.getSource().equals(saveButton)) {
-					
+					try {
+						PrintWriter pw = new PrintWriter("stage.txt");
+						
+						for (Component component : stagePanel.getComponents())
+						    if (component.getClass().equals(JButton.class)) {
+						    	String text = ((JButton)component).getText().replace("세대", ",");
+						    	int index = Integer.parseInt(text.split(",")[0]);
+						    	int[] g = candidate.get(index).g;
+						    	for(int i = 0; i < g.length; i++)
+						    		pw.print(g[i] + " ");
+						    	pw.println();
+						    	pw.println(candidate.get(index).majorDataList);
+						    	pw.println(candidate.get(index).minorDataList);
+						    	pw.println();
+						    }
+						
+						pw.close();
+					} catch (FileNotFoundException e) {
+					}
 				}
 			}
 		});

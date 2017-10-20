@@ -1,4 +1,4 @@
-# capstone
+# < capstone >
 
-## Genetic Learning
-## War Of Galaxy
+### Subject : Genetic Learning
+### Title : War Of Galaxy

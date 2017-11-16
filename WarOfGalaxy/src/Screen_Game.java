@@ -5,9 +5,14 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -35,6 +40,8 @@ class Screen_Game extends Screen {
 	
 	static LinkedList<Data> majorDataList;
 	static LinkedList<Data> minorDataList;
+	
+	Clip clip;
 	
 	public Screen_Game(int[] g, String majorData, String minorData) {
 		background_AI = new ImageIcon(background_AIFilename).getImage();
@@ -71,6 +78,16 @@ class Screen_Game extends Screen {
 		
 		panel_AI.repaint();
 		panel_Player.repaint();
+		
+		try {
+			AudioInputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(new FileInputStream("WarOfGalaxy_main.wav")));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			clip.start();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void init() {
@@ -154,6 +171,9 @@ class Screen_Game extends Screen {
 				if(ai.destroyed)
 					break;
 			}
+			
+			clip.stop();
+			clip.close();
 			
 			if(player.destroyed) {
 				player.img_airplane = new ImageIcon("bomb1.png").getImage();

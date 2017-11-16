@@ -4,7 +4,12 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JFrame;
 
 class Screen_Beginning extends Screen {
@@ -16,10 +21,22 @@ class Screen_Beginning extends Screen {
 	Point startPos = new Point(330, 280);
 	Point quitPos = new Point(330, 335);
 	
+	Clip clip;
+	
 	public Screen_Beginning() {
 		setBackground(backgroundFilename);
 		setPointer(pointerFilename, startPos);
 		init();
+		
+		try {
+			AudioInputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(new FileInputStream("WarOfGalaxy_lounge.wav")));
+			clip = AudioSystem.getClip();
+			clip.open(ais);
+			clip.start();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void init() {
@@ -55,6 +72,10 @@ class Screen_Beginning extends Screen {
 						});
 						t.start();
 					}
+					
+					clip.stop();
+					clip.close();
+					
 					dispose();
 				}
 			}

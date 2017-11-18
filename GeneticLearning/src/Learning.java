@@ -1,6 +1,8 @@
 import java.awt.Color;
 import java.awt.Point;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JLabel;
@@ -100,19 +102,18 @@ public class Learning {
 				for(int j = 0; j < ENTITY_NUM; j++)
 					if(roulette < cumulativeNormed[j]) {
 						nextGeneration[i] = copyGene(generation[j]);
+						nextGeneration[i].index = i;
 						break;
 					}
 			}
 
-			HashSet<Integer> basket = new HashSet<>();
-			while(basket.size() < (int)(ENTITY_NUM * CROSSOVER_RATIO))
-				basket.add(random.nextInt(ENTITY_NUM));
-
-			int[] indexes = new int[basket.size()];
-			pos = 0;
-			for(int i : basket)
-				indexes[pos++] = i;
-
+			List<Gene> nextGenerationList = Arrays.asList(nextGeneration);
+			Collections.shuffle(nextGenerationList);
+			
+			int[] indexes = new int[(int)(ENTITY_NUM * CROSSOVER_RATIO)];
+			for(int i = 0; i < indexes.length; i++)
+				indexes[i] = nextGenerationList.get(i).index;
+			
 			for(int i = 0; i < indexes.length-1; i += 2) {
 				int crossover_L = random.nextInt(GENE_ELEMENT_NUM);
 				int crossover_R = random.nextInt(GENE_ELEMENT_NUM);
